@@ -56,11 +56,11 @@ class Player{
 		int money_ ;
 		int position_ ;
 		string name_ ;
-		vector<int> owned_city_ ; // ¾Ö¦³ªºcity 
+		vector<int> owned_city_ ; // æ“æœ‰çš„city 
 };
 
 /*
---------Jason Yeah-----------§Ú¦³§ïªº·|¦b«á­±¥[add-------------------------------------------
+--------Jason Yeah-----------æˆ‘æœ‰æ”¹çš„æœƒåœ¨å¾Œé¢åŠ add-------------------------------------------
 */
 
 class MapUnit
@@ -91,8 +91,8 @@ class UpgradableUnit : public MapUnit
 {
 public:
 
-	UpgradableUnit(int price, int u_price): price_(price), upgrade_price_(u_price){}
-	// ¤£ª¾¹D«ç»ò¶Ç¤J array ªì©l¤Æ fine_[5]
+	UpgradableUnit( int id , int price, int u_price):id_(id) , price_(price), upgrade_price_(u_price){}
+	// ä¸çŸ¥é“æ€éº¼å‚³å…¥ array åˆå§‹åŒ– fine_[5]
 	
 	virtual void bought_By(Player & p){
 		if( host == nullptr ){
@@ -119,6 +119,7 @@ public:
 	}
 
 private: 
+	int id_ ;
 	int price_, upgrade_price_;
 	int fine_[5];
 	int level_ = 1;
@@ -129,7 +130,7 @@ class CollectableUnit : public MapUnit
 {
 public:
 
-	CollectableUnit(int price, int fine):price_(price), fine_(fine){}
+	CollectableUnit( int id , int price, int fine):id_(id) ,price_(price), fine_(fine){}
 
 	virtual void bought_By(Player & p){
 		if( host == nullptr ){
@@ -157,6 +158,7 @@ public:
 
 
 private: 
+	int id_ ;
 	int price_, collect_=0;
 	int fine_;
 };
@@ -166,7 +168,7 @@ class RandomCostUnit  : public MapUnit
 {
 public:
 
-	RandomCostUnit(int price, int fine):price_(price), fine_(fine){}
+	RandomCostUnit( int id , int price, int fine):id_(id) , price_(price), fine_(fine){}
 
 	virtual void bought_By(Player & p){
 		if( host == nullptr ){
@@ -184,7 +186,8 @@ public:
 	}
 
 private: 
-	int price_, dice;   // dice ­n±q gameflow¨ú±o
+	int id_ ;
+	int price_, dice;   // dice è¦å¾ gameflowå–å¾—
 	int fine_;
 };
 
@@ -192,7 +195,7 @@ private:
 --------Jason Yeah----------------------------------------------------------------
 */
 
-class WorldPlayer{  //¦s¤H? 
+class WorldPlayer{  //å­˜äºº? 
 	public:
 		
 	private:
@@ -217,19 +220,19 @@ class WorldMap{
 				}
 				
 			//	cout<< line_vector[2] <<" "<<line_vector[3] << endl ;
-				
+			// ç”¨idä»£è¡¨cityçš„ä½ç½® é€™æ¨£playerçš„positionå°±å¯ä»¥å°åˆ°city	
 				if( line_vector[0] == "U" ){
-					UpgradableUnit ucity( stoi( line_vector[2] ) , stoi( line_vector[3] ) ) ; // À³¸Ó¤]­n¶Ç[4]~[8] (fine[5]) ¦ıUgradableUnit¨ºÃä»¡¥L¦³°İÃD §Ú´N²o©ì 
+					UpgradableUnit ucity( city_count , stoi( line_vector[2] ) , stoi( line_vector[3] ) ) ; // æ‡‰è©²ä¹Ÿè¦å‚³[4]~[8] (fine[5]) ä½†UgradableUnité‚£é‚Šèªªä»–æœ‰å•é¡Œ æˆ‘å°±ç‰½æ‹– 
 					units_[ city_count ] = &ucity ;
 					city_count += 1 ;		
 				}
 				else if( line_vector[0] == "C" ){
-					CollectableUnit ccity( stoi( line_vector[2] ) , stoi( line_vector[3] ) ) ;
+					CollectableUnit ccity( city_count , stoi( line_vector[2] ) , stoi( line_vector[3] ) ) ;
 					units_[ city_count ] = &ccity ;
 					city_count += 1 ;
 				}
 				else if( line_vector[0] == "R" ){
-					RandomCostUnit rcity( stoi( line_vector[2] ) , stoi( line_vector[3] ) )	;
+					RandomCostUnit rcity( city_count , stoi( line_vector[2] ) , stoi( line_vector[3] ) ) ;
 					units_[ city_count ] = &rcity ;
 					city_count += 1 ;
 				}
