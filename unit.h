@@ -3,51 +3,68 @@
 
 #include<iostream>
 #include<string>
-#include"player.h"
+#include<stdio.h>
+#include<set>
+#include "player.h"
 
 class MapUnit
 {
 public:	
+	MapUnit(
+		const char & type,
+		const int & id,
+		const std::string & name,
+		const int & price 
+	) : type_(type),
+		id_(id),
+		name_(name),
+		price_(price) {}
+
+
 	bool isHost(const Player & p) const{
-		return host->get_id() == p.get_id(); 
+		return host->getId() == p.getId(); 
 	}
 
 	bool isBuyable() const{
 		return host == NOBODY; 
 	}
 
-	void release() { 
-		host = NOBODY; 
-	}
+	virtual void release();
 
-	void vistied_By(Player & p){
+	void vistiedBy(Player & p){
 		guest = &p;
 	}
 
-	int get_id() const { 
-		return id_; 
+	int getHostId() const { 
+		return host->getId(); 
+	}
+	bool isJail() const { 
+		return (type_ == 'J'); 
 	}
 
-	int get_Host_id() const { 
-		return host->get_id(); 
-	}
-
-
-	const std::string & get_Name() const { 
+	const std::string & getName() const { 
 		return name_; 
 	}
 
-	virtual int get_Price() const ;
-	virtual void bought_By(Player & p);	
-	virtual void upgraded_By(const Player & p);
-	virtual void collected_By(const Player & p);
-	virtual void fine_Guest();
+	int getPrice() const {
+		return price_;
+	}
+
+	void boughtBy(Player & p){
+		if( host == nullptr && !isJail() ){
+			host = &p;
+			host->loseMoney( price_ );
+		}
+	}
+	virtual void upgradedBy(const Player & p);
+	virtual void collectedBy(const Player & p);
+	virtual void fineGuest();
 
 protected:
 	Player *host;
 	Player *guest;
 	constexpr static Player *NOBODY = nullptr;
-	const char TYPE = 0;
+	const char type_ = 0;
 	const int id_ = 0, price_ = 0;
 	const std::string name_;
 };
@@ -57,36 +74,38 @@ class UpgradableUnit : public MapUnit
 {
 public:
 
-	UpgradableUnit(int price, int u_price): price_(price), upgrade_price_(u_price){}
-	// 不知道怎麼傳入 array 初始化 fine_[5]
-	
-	virtual int get_Price() const { 
-		return price_; 
-	}
+	UpgradableUnit(
+		const int & id, 
+		const std::string & name,
+		const int & price,
+		const int & upgrade_price,
+		const int *fine_of_level
+	) : MapUnit('U', id, name, price), 
+		upgrade_price_(upgrade_price), 
+		fineList_(fine_of_level) {}
 
-	virtual void bought_By(Player & p){
-		if( host == nullptr ){
-			host = &p;
-			host->lose_money( price_ );
-		}
-	}
-
-	virtual void upgraded_By(const Player & p){
-		if( host->get_id() == p.get_id() && level_ <= 5){ 
-			host->lose_money( upgrade_price_ ); 
+	virtual void upgradedBy(const Player & p){
+		if( host->getId() == p.getId() && level_ <= maxLevel ){ 
+			host->loseMoney( upgrade_price_ ); 
 			level_ += 1;
 		}
 	}
 	
-	virtual void fine_Guest(){
-		guest->lose_money( fine_[level_-1] );
-		host->lose_money( fine_[level_-1] );
+	virtual void fineGuest(){
+		guest->loseMoney( fineList_[level_-1] );
+		host->loseMoney( fineList_[level_-1] );
+	}
+
+	virtual void release() { 
+		host = NOBODY; 
+		level_ = minlevel;
 	}
 
 private: 
-	int price_, upgrade_price_;
-	int fine_[5];
-	int level_ = 1;
+	const int upgrade_price_;
+	constexpr static int maxLevel = 5, minlevel = 1;
+	const int *fineList_;
+	int level_ = 1;	
 };
 
 
@@ -94,34 +113,37 @@ class CollectableUnit : public MapUnit
 {
 public:
 
-	CollectableUnit(int price, int fine):price_(price), fine_(fine){}
+	CollectableUnit(
+		const int & id, 
+		const std::string & name,
+		const int & price,
+		const int & fine
+	) : MapUnit('C', id, name, price),
+		fine_(fine) {}
 
-	virtual int get_Price() const { 
+	virtual int getPrice() const { 
 		return price_; 
 	}
 
-	virtual void bought_By(Player & p){
-		if( host == nullptr ){
-			host = &p;
-			host->lose_money( price_ );
-		}
-	}
-
-	virtual void collected_By(const Player & p){
-		if( host->get_id() == p.get_id() ){
+	virtual void collectedBy(const Player & p){
+		if( host->getId() == p.getId() ){
 			collect_ += 1;
 		}
 	}
 
-	virtual void fine_Guest(){
-		guest->lose_money( fine_ * collect_ );
-		host->gain_money( fine_ * collect_ );
+	virtual void fineGuest(){
+		guest->loseMoney( fine_ * collect_ );
+		host->gainMoney( fine_ * collect_ );
 	}
 
+	virtual void release() { 
+		host = NOBODY; 
+		collect_ = 0;
+	}
 
 private: 
-	int price_, collect_=0;
-	int fine_;
+	const int fine_=0;
+	int collect_=0;
 };
 
 
@@ -129,35 +151,40 @@ class RandomCostUnit  : public MapUnit
 {
 public:
 
-	RandomCostUnit(int price, int fine):price_(price), fine_(fine){}
+	RandomCostUnit(
+		const int & id, 
+		const std::string & name,
+		const int & price,
+		const int & fine
+	) : MapUnit('R', id, name, price),
+		fine_(fine) {}
 
-	virtual int get_Price() const { 
-		return price_; 
-	}
-
-	virtual void bought_By(Player & p){
-		if( host == nullptr ){
-			host = &p;
-			host->lose_money( price_ );
-		}
-	}
-
-	virtual void fine_Guest(){
-		guest->lose_money( fine_ * dice );
-		host->gain_money( fine_ * dice );
+	virtual void fineGuest(){
+		guest->loseMoney( fine_ * dice );
+		host->gainMoney( fine_ * dice );
 	}
 
 private: 
-	int price_, dice;   // dice 要從 gameflow取得
-	int fine_;
+	int dice=0;   // dice 要從 gameflow取得
+	const int fine_=0;
 };
 
 
 class JailUnit : public MapUnit
 {
+public:
+
+	void addPlayer(const Player & p){ 
+		playerInJail.insert( p.getId() ); 
+	}
+	void removePlayer(const Player & p){ 
+		playerInJail.erase( p.getId() ); 
+	}
+
+private:
+	std::set<int> playerInJail;
 
 };
-
 
 
 
