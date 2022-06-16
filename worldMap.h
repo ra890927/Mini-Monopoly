@@ -24,7 +24,7 @@ class WorldMap{
 				inputLine >> cityName;
 				inputLine >> cityPrice;			
 			//	std::cout<< lineVector[2] <<" "<<lineVector[3] << std::endl ;
-			// ¥Îid¥Nªícityªº¦ì¸m ³o¼Ëplayerªºposition´N¥i¥H¹ï¨ìcity	
+			// ç”¨idä»£è¡¨cityçš„ä½ç½® é€™æ¨£playerçš„positionå°±å¯ä»¥å°åˆ°city	
 				if( cityType == 'U' ){
 					MapUnit *cityNode;
 					int upgradePrice = 0;
@@ -34,7 +34,7 @@ class WorldMap{
 					for( int i=0 ; i<UpgradableUnit::maxLevel ; ++i ) inputLine >> fineList[i];
 					
 					cityNode = new UpgradableUnit( cityCount , cityName , cityPrice , upgradePrice , fineList );
-					units_.push_back(cityNode);
+					units_.push_back( cityNode );
 					cityCount += 1;
 				}
 				else if( cityType == 'C' ){
@@ -43,7 +43,7 @@ class WorldMap{
 					inputLine >> fine;
 					
 					cityNode = new CollectableUnit( cityCount , cityName , cityPrice , fine );
-					units_.push_back(cityNode);
+					units_.push_back( cityNode );
 					cityCount += 1;
 				}
 				else if( cityType == 'R' ){
@@ -52,14 +52,14 @@ class WorldMap{
 					inputLine >> fine;
 					
 					cityNode = new RandomCostUnit( cityCount , cityName , cityPrice , fine );
-					units_.push_back(cityNode);
+					units_.push_back( cityNode );
 					cityCount += 1;
 				}
 				else if( cityType == 'J' ){
 					MapUnit *cityNode;
 					
 					cityNode = new JailUnit( cityCount , cityName , cityPrice );
-					units_.push_back(cityNode);
+					units_.push_back( cityNode );
 					cityCount += 1;
 				}
 				else{
@@ -72,7 +72,7 @@ class WorldMap{
 			inFile.close();
 		}
 		
-		void printMap( std::vector<Player> player ) const { //±Nplayer¶Ç¤J 
+		void printMap( std::vector<Player> player ) const { //å°‡playerå‚³å…¥ 
 			for( int i=0 ; i<numCity_ ; ++i ){
 			//	std::cout << 
 			}
