@@ -5,8 +5,8 @@
 #include<vector>
 #include<string>
 
-constexpr int MAX_PLAYER = 4;
-constexpr char const *DEFAULT_PLAYER_NAME[MAX_PLAYER] = {"Player 1","Player 2","Player 3","Player 4"};
+constexpr int MAX_PLAYER_NUM = 4;
+constexpr char const *DEFAULT_PLAYER_NAME[MAX_PLAYER_NUM] = {"Player 1","Player 2","Player 3","Player 4"};
 
 class Player{
 	public:
@@ -33,17 +33,17 @@ class Player{
 			ownedCity_.push_back( cityId );
 		}
 		
-		void move( const int dicePoint , const int numCity ){ //»İ­n¶Ç¤JcityªºÁ`¼Æ 
+		void move( const int dicePoint , const int numCity ){ //éœ€è¦å‚³å…¥cityçš„ç¸½æ•¸ 
 			prevPosition_ = position_;
 			position_ += dicePoint;
 			if( position_ > numCity - 1 ) position_ = position_ - numCity - 1 ;	
 		}
 		
-		void setInJail( bool set ){ //¶Ç¤J1¶iºÊº» 
+		void setInJail( bool set ){ //å‚³å…¥1é€²ç›£ç„ 
 			inJail_ = set;
 		}
 		
-		void setPlayerOut( bool set ){ //¶Ç¤J1±Nplayer²^¨O¥X§½ 
+		void setPlayerOut( bool set ){ //å‚³å…¥1å°‡playeræ·˜æ±°å‡ºå±€ 
 			out_ = set;
 		}
 		
@@ -51,7 +51,7 @@ class Player{
 			return ( money_ < 0 ) ? true : false;
 		}
 		
-		const bool isFinishRound() const {  //¬O§_³q¹L­ìÂI 
+		const bool isFinishRound() const {  //æ˜¯å¦é€šéåŸé» 
 			return ( prevPosition_ > position_ ) ? true : false;
 		} 
 		
@@ -91,7 +91,7 @@ class Player{
 		bool inJail_ = false;
 		bool out_ = false;
 		std::string name_ ;
-		std::vector<int> ownedCity_; // ¾Ö¦³ªºcity 
+		std::vector<int> ownedCity_; // æ“æœ‰çš„city 
 		constexpr static int initMoney = 25000;
 };
 
