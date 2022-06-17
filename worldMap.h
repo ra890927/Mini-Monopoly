@@ -4,11 +4,12 @@
 #include<iostream>
 #include<fstream>
 #include<sstream>
+#include<iomanip>
 #include"unit.h"
 
 class WorldMap{
 	public:
-		void readFile(){
+		WorldMap(){
 			std::ifstream inFile ( "map.txt" , std::ifstream::in );
 			std::string inLine;
 			int cityCount = 0;
@@ -65,17 +66,71 @@ class WorldMap{
 				else{
 					std::cout << "Wrong input!" << std::endl;
 				} 
-			}
+			} 
 			
 			numCity_ = cityCount;
 			
 			inFile.close();
 		}
 		
-		void printMap( std::vector<Player> player ) const { //將player傳入 
-			for( int i=0 ; i<numCity_ ; ++i ){
-			//	std::cout << 
+		void printMap( const WorldPlayer wp ) const { //將player傳入 
+			for( int i=0 ; i<numCity_/2 ; ++i ){
+				printMapInfo( wp , i );
+				std::cout << "   ";
+				printMapInfo( wp , numCity_-i-1 );
+				std::cout << std::endl;
 			}
+		}
+		
+		void printMapInfo( const WorldPlayer wp , const int index ) const {
+			std::cout << "=";				
+			for( int i=0 ; i<wp.getNumPlayer() ; ++i )
+			{	//std::cout << wp.getPlayerById(i).getId() << std::endl; 
+				if( wp.getPlayerById(i).getPosition() == index ){
+					std::cout << i;
+				}
+				else{
+					std::cout << " ";
+				}
+			} 
+		
+			std::cout << "= [" << index << "]";
+			std::cout << std::setw(10) << units_[index]->getName() << " ";
+			
+			if( units_[index]->isBuyable() ) std::cout << "   ";
+			else std::cout << "<" << units_[index]->getHostId() << ">";
+				
+			if( units_[index]->getType() == 'C' && !units_[index]->isBuyable() ){
+				std::cout << " x" << units_[index]->getCollect() ;
+			}
+			else if( units_[index]->isBuyable() ){
+				std::cout << " B$";
+			}
+			else{
+				std::cout << " U$";
+			}
+				
+			if( units_[index]->isBuyable() ){
+				std::cout << std::setw(5) << units_[index]->getPrice() << " ";
+			}
+			else{
+				switch( units_[index]->getType() ){
+					case 'U':
+						std::cout << std::setw(5) << units_[index]->getNowFine() << " ";
+						break;
+					case 'C':
+						std::cout << std::setw(5) << units_[index]->getNowFine() << " ";
+						break;
+					case 'R':
+						std::cout << std::setw(5) << units_[index]->getRandomCostFine() << " ";
+						break;
+					default:
+						break;
+				}
+			}
+				
+			if( units_[index]->getType() == 'U' && !units_[index]->isBuyable() ) std::cout << "L" << units_[index]->getLevel();
+			else std::cout << "  ";
 		}
 		
 		int getNumCity() const {
