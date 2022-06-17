@@ -104,7 +104,6 @@ class WorldPlayer{
 				std::string name;
 				std::cout << "Please input player " << i+1 << "'s name (Default name is: " << DEFAULT_PLAYER_NAME[i] << "):";
 				getline( std::cin , name );
-				std::cout << std::endl;
 				
 				std::string playerName;
 				
@@ -119,8 +118,12 @@ class WorldPlayer{
 		//	std::cout << player[2]->getName() << std::endl;
 		}
 		
+		Player& getPlayerById( const int id ) const {
+			return *player[id];
+		}
+		
 		void playerOut( const int id ){
-			player[id]->setPlayerOut(1); 
+			player[id]->setPlayerOut(true); 
 		}
 		
 		int getNumPlayer() const {
