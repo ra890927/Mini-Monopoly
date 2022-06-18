@@ -83,6 +83,14 @@ class WorldMap{
 			
 			inFile.close();
 		}
+
+		~WorldMap(){
+			while(!units_.empty()){
+				MapUnit *unit = units_.back();
+				units_.pop_back();
+				delete unit;
+			}
+		}
 		
 		void printMap( const WorldPlayer wp ) const { //嚙瞇player嚙褒入 
 			for( int i=0 ; i<numCity_/2 ; ++i ){

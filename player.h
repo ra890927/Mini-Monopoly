@@ -5,9 +5,6 @@
 #include <vector>
 #include <string>
 
-constexpr int maxPlayerNum_ = 4;
-constexpr const char* defaultPlayerName[maxPlayerNum_] = {"Player 1", "Player 2", "Player 3", "Player 4"};
-
 class Player{
 	public:
 		Player( 
@@ -115,6 +112,14 @@ class WorldPlayer{
 		//	std::cout << player[1]->getName() << std::endl;
 		//	std::cout << player[2]->getName() << std::endl;
 		}
+
+		~WorldPlayer(){
+			while(!player.empty()){
+				Player *playerNode = player.back();
+				player.pop_back();
+				delete playerNode;
+			}
+		}
 		
 		Player& getPlayerById( int id ) const {
 		//	std::cout << "getPlayerById" << std::endl;
@@ -131,6 +136,10 @@ class WorldPlayer{
 	private:
 		int numPlayer_ = 0;
 		std::vector<Player*> player;
+		static constexpr int maxPlayerNum_ = 4;
+		static const std::string defaultPlayerName[maxPlayerNum_];
 };
+
+const std::string WorldPlayer::defaultPlayerName[] = {"Player 1", "Player 2", "Player 3", "Player 4"}
 
 #endif
