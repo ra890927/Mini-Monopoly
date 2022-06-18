@@ -1,16 +1,22 @@
 #ifndef WORLDMAP__
 #define WORLDMAP__
 
-#include<iostream>
-#include<fstream>
-#include<sstream>
-#include<iomanip>
-#include"unit.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <cstring>
+#include "unit.h"
 
 class WorldMap{
 	public:
-		WorldMap(){
-			std::ifstream inFile ( "map.txt" , std::ifstream::in );
+		WorldMap( std::string fileName = "map.txt" ){
+			std::ifstream inFile ( fileName , std::ifstream::in );
+			
+			if( inFile.fail() ){
+				std::cerr << "Open file fail!";
+			}
+			
 			std::string inLine;
 			int cityCount = 0;
 			
@@ -25,64 +31,69 @@ class WorldMap{
 				inputLine >> cityName;
 				inputLine >> cityPrice;			
 			//	std::cout<< lineVector[2] <<" "<<lineVector[3] << std::endl ;
-			// 用id代表city的位置 這樣player的position就可以對到city	
-				if( cityType == 'U' ){
-					MapUnit *cityNode;
-					int upgradePrice = 0;
-					int fineList[UpgradableUnit::maxLevel] = {0};
+
+				switch( cityType ){
+					case 'U': {
+						MapUnit *cityNode;
+						int upgradePrice = 0;
+						int fineList[UpgradableUnit::maxLevel] = {0};
 					
-					inputLine >> upgradePrice;
-					for( int i=0 ; i<UpgradableUnit::maxLevel ; ++i ) inputLine >> fineList[i];
+						inputLine >> upgradePrice;
+						for( int i = 0 ; i < UpgradableUnit::maxLevel ; ++i ) inputLine >> fineList[i];
 					
-					cityNode = new UpgradableUnit( cityCount , cityName , cityPrice , upgradePrice , fineList );
-					units_.push_back( cityNode );
-					cityCount += 1;
+						cityNode = new UpgradableUnit( cityCount , cityName , cityPrice , upgradePrice , fineList );
+						units_.push_back( cityNode );
+						cityCount += 1;
+						break;
+					}
+					case 'C': {
+						MapUnit *cityNode;
+						int fine = 0;
+						inputLine >> fine;
+					
+						cityNode = new CollectableUnit( cityCount , cityName , cityPrice , fine );
+						units_.push_back( cityNode );
+						cityCount += 1;
+						break;
+					}
+					case 'R': {
+						MapUnit *cityNode;
+						int fine = 0;
+						inputLine >> fine;
+					
+						cityNode = new RandomCostUnit( cityCount , cityName , cityPrice , fine );
+						units_.push_back( cityNode );
+						cityCount += 1;
+						break;
+					}	
+					case 'J': {					
+						MapUnit *cityNode;
+						cityNode = new JailUnit( cityCount , cityName , cityPrice );
+						units_.push_back( cityNode );
+						cityCount += 1;
+						break;
+					}
+					default:
+						std::cerr << "Error city type!";
+						break;
 				}
-				else if( cityType == 'C' ){
-					MapUnit *cityNode;
-					int fine = 0;
-					inputLine >> fine;
-					
-					cityNode = new CollectableUnit( cityCount , cityName , cityPrice , fine );
-					units_.push_back( cityNode );
-					cityCount += 1;
-				}
-				else if( cityType == 'R' ){
-					MapUnit *cityNode;
-					int fine = 0;
-					inputLine >> fine;
-					
-					cityNode = new RandomCostUnit( cityCount , cityName , cityPrice , fine );
-					units_.push_back( cityNode );
-					cityCount += 1;
-				}
-				else if( cityType == 'J' ){
-					MapUnit *cityNode;
-					
-					cityNode = new JailUnit( cityCount , cityName , cityPrice );
-					units_.push_back( cityNode );
-					cityCount += 1;
-				}
-				else{
-					std::cout << "Wrong input!" << std::endl;
-				} 
-			} 
-			
+			}
+
 			numCity_ = cityCount;
 			
 			inFile.close();
 		}
 		
-		void printMap( const WorldPlayer wp ) const { //將player傳入 
+		void printMap( const WorldPlayer wp ) const { //嚙瞇player嚙褒入 
 			for( int i=0 ; i<numCity_/2 ; ++i ){
 				printMapInfo( wp , i );
 				std::cout << "   ";
 				printMapInfo( wp , numCity_-i-1 );
 				std::cout << std::endl;
 			}
-		}
+		} 
 		
-		void printMapInfo( const WorldPlayer wp , const int index ) const {
+		void printMapInfo( const WorldPlayer& wp , int index ) const {
 			std::cout << "=";				
 			for( int i=0 ; i<wp.getNumPlayer() ; ++i )
 			{	//std::cout << wp.getPlayerById(i).getId() << std::endl; 
@@ -99,7 +110,7 @@ class WorldMap{
 			
 			if( units_[index]->isBuyable() ) std::cout << "   ";
 			else std::cout << "<" << units_[index]->getHostId() << ">";
-				
+			
 			if( units_[index]->getType() == 'C' && !units_[index]->isBuyable() ){
 				std::cout << " x" << units_[index]->getCollect() ;
 			}
@@ -133,8 +144,12 @@ class WorldMap{
 			else std::cout << "  ";
 		}
 		
-		int getNumCity() const {
+		const int getNumCity() const {
 			return numCity_;
+		}
+
+		MapUnit & getMapUnitById( int id ) const {
+			return *units_[id];
 		}
 
 	private:
