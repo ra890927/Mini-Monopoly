@@ -5,8 +5,8 @@
 
 int main(){
 	int PlayerCount=0;
-	printf("How many payers?(Maxinum:4)...>");
-	scanf("%d",&PlayerCount);
+	cout << "How many payers?(Maxinum:4)...>" << endl; 
+	cin>>PlayerCount;
 	if(PlayerCount<1 || PlayerCount>4){
 		cout << "only for 1-4 players\n" << endl;
 		return 0;
@@ -43,17 +43,17 @@ do{
     update(CurrentPlayer,dice)//«a§»
     checkPoint(CurrentPlayer)//«a§»
     if(CheckWhos()==NULL){//¶R¦a 
-		printf("%s, do you want to buy %s? (1:Yes [default] / 2:No)...>",GetName(CurrentPlayer),GetPosition(CurrentPlayer));
-		scanf("%d",option);
+    	cout << GetName(CurrentPlayer) << ", do you want to buy " << GetPosition(CurrentPlayer) << "? (1:Yes [default] / 2:No)...>" << endl;
+    	cin>>option;
         if(option != 2){
         	buy(CurrentPlayer);
 		}
     }
     else if(CheckWhos()==CurrentPlayer){//¤É¯Å 
     	if(upgradable(CurrentPlayer)){
-    		printf("%s, do you want to upgrade %s? (1:Yes [default] / 2:No)...>",GetName(CurrentPlayer),GetPosition(CurrentPlayer));	
+    		cout << GetName(CurrentPlayer) << ", do you want to upgrade " << GetPosition(CurrentPlayer) << "? (1:Yes [default] / 2:No)...>" << endl;
 		}
-        scanf("%d",option);
+        cin>>option;
         if(option != 2){
         	upgrade(CurrentPlayer);
 		}
