@@ -68,14 +68,10 @@ public:
 		upgradePrice_(upgradePrice), 
 		fineList_(fineOfLevel) {}
 
-	virtual void upgradedBy(const Player & p);
-	
+	virtual void upgradedBy(const Player & p);	
 	virtual void fineGuest();
-
-	virtual void release();
-	
-	virtual int getLevel() const;
-	
+	virtual void release();	
+	virtual int getLevel() const;	
 	virtual int getNowFine() const;
 
 	~UpgradableUnit() { delete[] fineList_; }
@@ -99,33 +95,12 @@ public:
 	) : MapUnit('C', id, name, price),
 		fine_(fine) {}
 
-	virtual int getPrice() const { 
-		return price_; 
-	}
-	
-	virtual int getCollect() const { 
-		return collect_; 
-	}
-
-	virtual void collectedBy(const Player & p){
-		if( host_->getId() == p.getId() ){
-			collect_ += 1;
-		}
-	}
-
-	virtual void fineGuest(){
-		guest_->loseMoney( fine_ * collect_ );
-		host_->gainMoney( fine_ * collect_ );
-	}
-
-	virtual void release() { 
-		host_ = NOBODY; 
-		collect_ = 0;
-	}
-	
-	virtual int getNowFine() const { 
-		return fine_ * collect_;
-	}
+	virtual int getPrice() const;	
+	virtual int getCollect() const;
+	virtual void collectedBy(const Player & p);
+	virtual void fineGuest();
+	virtual void release();	
+	virtual int getNowFine() const;
 
 	~CollectableUnit() {}
 
@@ -147,10 +122,8 @@ public:
 	) : MapUnit('R', id, name, price),
 		fine_(fine) {}
 
-	virtual void fineGuest();
-	
+	virtual void fineGuest();	
 	virtual int getRandomCostFine() const;
-
 	virtual void setDice(int dice);
 
 	~RandomCostUnit() {}
@@ -170,12 +143,8 @@ public:
 		int price
 	): MapUnit('J', id, name, price){}
 	
-	void addPlayer(const Player & p){ 
-		playerInJail[p.getId()] = true;
-	}
-	void removePlayer(const Player & p){ 
-		playerInJail[p.getId()] = false;
-	}
+	void addPlayer(const Player & p);
+	void removePlayer(const Player & p);
 
 	~JailUnit() {}
 

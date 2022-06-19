@@ -107,3 +107,11 @@ int RandomCostUnit::getRandomCostFine() const {
 void RandomCostUnit::setDice(int dice) {
 	dice_ = dice;
 }
+
+
+void JailUnit::addPlayer(const Player & p){ 
+	playerInJail[p.getId()] = true;
+}
+void JailUnit::removePlayer(const Player & p){ 
+	playerInJail[p.getId()] = false;
+}
