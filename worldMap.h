@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 #include <iomanip>
 #include <cstring>
 #include "unit.h"
@@ -29,46 +30,42 @@ class WorldMap{
 				
 				inputLine >> cityType;
 				inputLine >> cityName;
-				inputLine >> cityPrice;			
+				inputLine >> cityPrice;	
 			//	std::cout<< lineVector[2] <<" "<<lineVector[3] << std::endl ;
 
 				switch( cityType ){
 					case 'U': {
-						MapUnit *cityNode;
 						int upgradePrice = 0;
-						int fineList[UpgradableUnit::maxLevel] = {0};
+						int *fineList = new int [UpgradableUnit::maxLevel] ;
 					
 						inputLine >> upgradePrice;
 						for( int i = 0 ; i < UpgradableUnit::maxLevel ; ++i ) inputLine >> fineList[i];
-					
-						cityNode = new UpgradableUnit( cityCount , cityName , cityPrice , upgradePrice , fineList );
+				
+						MapUnit *cityNode = new UpgradableUnit( cityCount , cityName , cityPrice , upgradePrice , fineList );
 						units_.push_back( cityNode );
 						cityCount += 1;
 						break;
 					}
 					case 'C': {
-						MapUnit *cityNode;
 						int fine = 0;
 						inputLine >> fine;
 					
-						cityNode = new CollectableUnit( cityCount , cityName , cityPrice , fine );
+						MapUnit *cityNode = new CollectableUnit( cityCount , cityName , cityPrice , fine );
 						units_.push_back( cityNode );
 						cityCount += 1;
 						break;
 					}
 					case 'R': {
-						MapUnit *cityNode;
 						int fine = 0;
 						inputLine >> fine;
 					
-						cityNode = new RandomCostUnit( cityCount , cityName , cityPrice , fine );
+						MapUnit *cityNode = new RandomCostUnit( cityCount , cityName , cityPrice , fine );
 						units_.push_back( cityNode );
 						cityCount += 1;
 						break;
 					}	
 					case 'J': {					
-						MapUnit *cityNode;
-						cityNode = new JailUnit( cityCount , cityName , cityPrice );
+						MapUnit *cityNode = new JailUnit( cityCount , cityName , cityPrice );
 						units_.push_back( cityNode );
 						cityCount += 1;
 						break;
@@ -80,19 +77,18 @@ class WorldMap{
 			}
 
 			numCity_ = cityCount;
-			
+			//for( int i = 0 ; i < numCity_ ; ++i ) std::cout<<" "<< units_[i]->getNowFine() ;
+						
 			inFile.close();
 		}
-
+		
 		~WorldMap(){
-			while(!units_.empty()){
-				MapUnit *unit = units_.back();
-				units_.pop_back();
-				delete unit;
+			for( int i = 0; i < numCity_ ; ++i){
+				delete units_[i];
 			}
 		}
 		
-		void printMap( const WorldPlayer wp ) const { //嚙瞇player嚙褒入 
+		void printMap( const WorldPlayer& wp ) const { //�ݭn��player�ǤJ 
 			for( int i=0 ; i<numCity_/2 ; ++i ){
 				printMapInfo( wp , i );
 				std::cout << "   ";
@@ -102,21 +98,23 @@ class WorldMap{
 		} 
 		
 		void printMapInfo( const WorldPlayer& wp , int index ) const {
-			std::cout << "=";				
-			for( int i=0 ; i<wp.getNumPlayer() ; ++i )
-			{	//std::cout << wp.getPlayerById(i).getId() << std::endl; 
-				if( wp.getPlayerById(i).getPosition() == index ){
-					std::cout << i;
+			std::cout << "=";
+			std::vector<int> activeList = wp.getActivePlayerId();
+			for( int i = 0 ; i < wp.getNumPlayer() ; ++i )
+			{	if( wp.getPlayerById(activeList[i]).getPosition() == index && !wp.getPlayerById(activeList[i]).isOut() ){
+					std::cout << activeList[i];
+				}
+				else if( wp.getPlayerById(activeList[i]).isOut() ){
 				}
 				else{
 					std::cout << " ";
 				}
 			} 
 		
-			std::cout << "= [" << index << "]";
+			std::cout << "= [" << std::setw(2) << index << "]";
 			std::cout << std::setw(10) << units_[index]->getName() << " ";
 			
-			if( units_[index]->isBuyable() ) std::cout << "   ";
+			if( units_[index]->isBuyable() || units_[index]->isJail() ) std::cout << "   ";
 			else std::cout << "<" << units_[index]->getHostId() << ">";
 			
 			if( units_[index]->getType() == 'C' && !units_[index]->isBuyable() ){
@@ -125,38 +123,26 @@ class WorldMap{
 			else if( units_[index]->isBuyable() ){
 				std::cout << " B$";
 			}
+			else if( units_[index]->isJail() ){
+				std::cout << " J$";
+			}
 			else{
 				std::cout << " U$";
 			}
 				
-			if( units_[index]->isBuyable() ){
-				std::cout << std::setw(5) << units_[index]->getPrice() << " ";
-			}
-			else{
-				switch( units_[index]->getType() ){
-					case 'U':
-						std::cout << std::setw(5) << units_[index]->getNowFine() << " ";
-						break;
-					case 'C':
-						std::cout << std::setw(5) << units_[index]->getNowFine() << " ";
-						break;
-					case 'R':
-						std::cout << std::setw(5) << units_[index]->getRandomCostFine() << " ";
-						break;
-					default:
-						break;
-				}
-			}
+			if( units_[index]->isJail() ) std::cout << std::setw(5) << units_[index]->getPrice() << " ";
+			else if( units_[index]->isBuyable() ) std::cout << std::setw(5) << units_[index]->getPrice() << " ";
+			else std::cout << std::setw(5) << units_[index]->getNowFine() << " ";
 				
 			if( units_[index]->getType() == 'U' && !units_[index]->isBuyable() ) std::cout << "L" << units_[index]->getLevel();
 			else std::cout << "  ";
 		}
 		
-		const int getNumCity() const {
+		int getNumCity() const {
 			return numCity_;
 		}
 
-		MapUnit & getMapUnitById( int id ) const {
+		MapUnit& getMapUnitById( int id ) const {
 			return *units_[id];
 		}
 

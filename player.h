@@ -5,6 +5,9 @@
 #include <vector>
 #include <string>
 
+constexpr int maxPlayerNum = 4;
+constexpr const char* defaultPlayerName[maxPlayerNum] = {"AoA", "Banana", "Cow boy", "Didi"};
+
 class Player{
 	public:
 		Player( 
@@ -30,48 +33,57 @@ class Player{
 		
 		void addCity( int cityId ){
 			ownedCity_.push_back( cityId );
+			ownedCityNum_ += 1;
 		}
 		
-		void move( int dicePoint , int numCity ){ //嚙豎要嚙褒入city嚙踝蕭嚙窯嚙踝蕭 
+		void move( int dicePoint , int numCity ){ 
 			position_ += dicePoint;
-			if( position_ > numCity - 1 ) position_ = position_ - numCity - 1 ;	
+			position_ %= numCity ;	
 		}
 		
-		void setInJail(){ //嚙箠嚙褊綽蕭 
+		void setInJail(){  
 			inJail_ = true;
 		}
 		
-		void setOutJail(){ //嚙碼嚙褊綽蕭 
+		void setOutJail(){ 
 			inJail_ = false;
 		}
 		
-		const bool isBankrupt() const {
+		void setPlayerOut(){
+			out_ = true;
+		}
+		
+		bool isBankrupt() const {
 			return ( money_ < 0 ) ? true : false;
 		}
 				
-	//	const bool isFinishRound() const {  //嚙瞌嚙稻嚙緬嚙盤嚙踝蕭嚙瘢 
+	//	const bool isFinishRound() const {  
 	//		return ( prevPosition_ > position_ ) ? true : false;
 	//	} 
 		
-		const int getId() const {
+		int getId() const {
 			return id_;
 		}
 		
-		const int getMoney() const {
+		int getMoney() const {
 			return money_;
 		}
 		
-		const int getPosition() const {
+		int getPosition() const {
 			return position_;
 		}
+
+		int getOwnedCityNum() const {
+			return ownedCityNum_;
+		}
 		
-		const bool isInJail() const {
+		bool isInJail() const {
 			return inJail_;
 		}
 		
-	/*	const bool isOut() const {
+		const bool isOut() const {
 			return out_;
-		}*/
+		}
 		
 		const std::string getName() const {
 			return name_;
@@ -86,9 +98,10 @@ class Player{
 		int money_ = 0;
 		int position_ = 0;
 		bool inJail_ = false;
-	//	bool out_ = false;
+		bool out_ = false;
 		const std::string name_ ;
-		std::vector<int> ownedCity_; // 嚙誰佗蕭嚙踝蕭city 
+		int ownedCityNum_ = 0;
+		std::vector<int> ownedCity_; // �֦���city 
 		constexpr static int initMoney = 25000;
 };
 
@@ -98,26 +111,22 @@ class WorldPlayer{
 			numPlayer_ = num;
 			
 			for( int i = 0 ; i < num ; ++i ){
-				std::string name;
-				std::cout << "Please input player " << i+1 << "'s name (Default name is: " << defaultPlayerName[i] << "):";
-				getline( std::cin , name );
-				 
 				std::string playerName;
+				std::cout << "Please input player " << i+1 << "'s name (Default name is: " << defaultPlayerName[i] << "):";
+				getline( std::cin , playerName );
 				
-				if( name.empty() ) playerName = defaultPlayerName[i];
-				else playerName = name;
+				if( playerName.empty() ) playerName = defaultPlayerName[i];
 				
 				player.push_back(new Player( i , playerName ) );
+				activePlayerId_.push_back(i);
 			}			
 		//	std::cout << player[1]->getName() << std::endl;
 		//	std::cout << player[2]->getName() << std::endl;
 		}
-
+		
 		~WorldPlayer(){
-			while(!player.empty()){
-				Player *playerNode = player.back();
-				player.pop_back();
-				delete playerNode;
+			for( int i = 0 ; i < numPlayer_ ; ++i ){
+				delete player[i];
 			}
 		}
 		
@@ -126,20 +135,32 @@ class WorldPlayer{
 			return *player[id];
 		}
 		
-/*		void playerOut( int id ){
+		void playerOut( int id ){
 			player[id]->setPlayerOut(); 
-		} */
+		} 
 		
-		const int getNumPlayer() const {
+		void decreNumPlayer(){
+			numPlayer_ -= 1;
+		}
+
+		void deleteActive( int id ) {
+			activePlayerId_.erase( activePlayerId_.begin() + id );
+		}
+		
+		int getNumPlayer() const {
 			return numPlayer_;
 		}
+
+		std::vector<int>getActivePlayerId() const {
+			return activePlayerId_;
+		}
+
+		//constexpr static int maxPlayerNum_ = 5,
+		
 	private:
 		int numPlayer_ = 0;
 		std::vector<Player*> player;
-		static constexpr int maxPlayerNum_ = 4;
-		static const std::string defaultPlayerName[maxPlayerNum_];
+		std::vector<int> activePlayerId_;
 };
-
-const std::string WorldPlayer::defaultPlayerName[] = {"Player 1", "Player 2", "Player 3", "Player 4"}
 
 #endif
